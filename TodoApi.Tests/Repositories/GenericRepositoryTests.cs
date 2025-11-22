@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using TodoApi.DataAccess;
 using TodoApi.Domain.Domain;
 using TodoApi.IDataAccess;
