@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
+using TodoApi.Domain.Interfaces;
 using TodoApi.IDataAccess;
 
 namespace TodoApi.DataAccess;
@@ -9,22 +10,30 @@ public class GenericRepository<TEntity>(TodoContext context) : IGenericRepositor
 {
     private readonly DbSet<TEntity> _entities = context.Set<TEntity>();
     private readonly DbContext _context = context;
-    void IGenericRepository<TEntity>.Add(TEntity entity)
+    async Task IGenericRepository<TEntity>.Add(TEntity entity)
     {
-        _entities.Add(entity);
+        await _entities.AddAsync(entity);
         _context.SaveChanges();
     }
 
-    TEntity IGenericRepository<TEntity>.Get(Expression<Func<TEntity, bool>> predicate)
+    async Task<TEntity> IGenericRepository<TEntity>.Get(Expression<Func<TEntity, bool>> predicate, params string[] includes)
     {
-        var entity = _entities.FirstOrDefault(predicate);
+        IQueryable<TEntity> query = _entities;
+
+        foreach (var include in includes)
+        {
+            query = query.Include(include);
+        }
+
+        var entity = await query.FirstOrDefaultAsync(predicate);
+
         return entity;
     }
 
-    void IGenericRepository<TEntity>.Update(TEntity entity)
+    async Task IGenericRepository<TEntity>.Update(TEntity entity)
     {
         _entities.Update(entity);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
     }
 
     public TEntity Get(Expression<Func<TEntity, bool>> predicate, params string[] includes)
@@ -41,18 +50,27 @@ public class GenericRepository<TEntity>(TodoContext context) : IGenericRepositor
         return entity;
     }
 
-    public List<TEntity> GetAll(Expression<Func<TEntity, bool>> predicate, params string[] includes)
+    async Task<List<TEntity>> IGenericRepository<TEntity>.GetAll(Expression<Func<TEntity, bool>> predicate, params string[] includes)
     {
-        return GetAllInternal(predicate, includes);
+        return (await GetAllInternal(predicate, includes));
     }
 
-    void IGenericRepository<TEntity>.Delete(TEntity entity)
+    async Task IGenericRepository<TEntity>.Delete(TEntity entity)
     {
-        _entities.Remove(entity);
-        _context.SaveChanges();
+        if (entity is ISoftDeletable softEntity)
+        {
+            softEntity.IsDeleted = true;
+            _entities.Update(entity);
+        }
+        else
+        {
+            _entities.Remove(entity);
+        }
+
+        await _context.SaveChangesAsync();
     }
 
-    private List<TEntity> GetAllInternal(Expression<Func<TEntity, bool>>? predicate, params string[] includes)
+    private async Task<List<TEntity>> GetAllInternal(Expression<Func<TEntity, bool>>? predicate, params string[] includes)
     {
         IQueryable<TEntity> query = _context.Set<TEntity>();
 
@@ -66,6 +84,8 @@ public class GenericRepository<TEntity>(TodoContext context) : IGenericRepositor
             query = query.Where(predicate);
         }
 
-        return query.ToList();
+        return (await query.ToListAsync());
     }
+
+  
 }
