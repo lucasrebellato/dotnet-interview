@@ -25,7 +25,7 @@ public class TodosControllerTests
 
         var controller = CreateController(serviceMock);
 
-        var result = await controller.Create(2, new CreateTodoDto { Description = 1 });
+        var result = await controller.Create(2, new CreateTodoDto { Description = "Hola" });
 
         var created = Assert.IsType<CreatedAtActionResult>(result);
         var value = Assert.IsType<TodoResponseDto>(created.Value);

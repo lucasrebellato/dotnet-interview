@@ -2,5 +2,5 @@
 
 public class CreateTodoDto
 {
-    public int Description { get; set; }
+    public required string Description { get; set; }
 }
