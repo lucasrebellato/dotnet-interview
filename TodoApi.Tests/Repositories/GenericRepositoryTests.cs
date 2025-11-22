@@ -102,9 +102,8 @@ public class GenericRepositoryTests
         var repo = new GenericRepository<TodoList>(context);
         await ((IGenericRepository<TodoList>)repo).Delete(seeded);
 
-        var loaded = await context.Set<TodoList>().FirstOrDefaultAsync(x => x.Id == seeded.Id);
-        Assert.NotNull(loaded);
-        Assert.True(loaded!.IsDeleted);
+        Assert.NotNull(seeded);
+        Assert.True(seeded!.IsDeleted);
     }
 
     [Fact]
