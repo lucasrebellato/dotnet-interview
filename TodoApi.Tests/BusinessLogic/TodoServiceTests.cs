@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
+﻿using System.Linq.Expressions;
 using Moq;
 using TodoApi.BusinessLogic.Services;
 using TodoApi.BusinessLogic.Interfaces;
 using TodoApi.IBusinessLogic.Dtos.Request;
-using TodoApi.IBusinessLogic.Dtos.Response;
 using TodoApi.IDataAccess;
 using TodoApi.Domain.Domain;
 using TodoApi.BusinessLogic.Exceptions;

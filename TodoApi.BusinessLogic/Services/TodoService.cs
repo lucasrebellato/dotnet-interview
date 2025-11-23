@@ -54,6 +54,20 @@ public class TodoService : ITodoService
         return TodoToDto.Map(todo);
     }
 
+    public async Task MarkAllAsCompleted(long todoListId)
+    {
+        TodoList todoList = await _todoListService.GetByIdWithIncludes(todoListId, ["Todos"]);
+
+        List<Todo> todosToUpdate = todoList.Todos.Where(t => !t.IsCompleted).ToList();
+
+        foreach (Todo todo in todosToUpdate)
+        {
+            todo.IsCompleted = true;
+        }
+
+        await _todoRepository.SaveChangesAsync();
+    }
+
     public async Task MarkAsCompleted(long todoListId, long id)
     {
         TodoList todoList = await _todoListService.GetByIdWithIncludes(todoListId, ["Todos"]);

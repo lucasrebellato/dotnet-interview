@@ -9,10 +9,12 @@ namespace TodoApi.Controllers;
 public class TodosController : ControllerBase
 {
     private readonly ITodoService _todoService;
+    private readonly IBackgroundJobService _backgroundJobService;
 
-    public TodosController(ITodoService todoService)
+    public TodosController(ITodoService todoService, IBackgroundJobService backgroundJobService)
     {
         _todoService = todoService;
+        _backgroundJobService = backgroundJobService;
     }
 
     [HttpPost]
@@ -48,5 +50,12 @@ public class TodosController : ControllerBase
     {
         await _todoService.MarkAsCompleted(todoListId, id);
         return NoContent();
+    }
+
+    [HttpPost("/complete-all")]
+    public ActionResult MarkAllAsCompleted([FromRoute] long todoListId)
+    {
+        _backgroundJobService.EnqueueMarkAllTodosCompleted(todoListId);
+        return Accepted();
     }
 }

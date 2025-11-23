@@ -10,4 +10,5 @@ public interface ITodoService
     Task<TodoResponseDto> GetById(long todoListId, long id);
     Task<TodoResponseDto> Update(long todoListId, long id, UpdateTodoDto dto);
     Task MarkAsCompleted(long todoListId, long id);
+    Task MarkAllAsCompleted(long todoListId);
 }
