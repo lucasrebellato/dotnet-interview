@@ -52,7 +52,7 @@ public class TodosController : ControllerBase
         return NoContent();
     }
 
-    [HttpPost("/complete-all")]
+    [HttpPost("complete-all")]
     public ActionResult MarkAllAsCompleted([FromRoute] long todoListId)
     {
         _backgroundJobService.EnqueueMarkAllTodosCompleted(todoListId);
