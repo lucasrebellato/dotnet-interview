@@ -9,4 +9,5 @@ public class Todo : ISoftDeletable
     public bool IsCompleted { get; set; } = false;
     public bool IsDeleted { get; set; } = false;
     public long TodoListId { get; set; }
+    public TodoList? TodoList { get; set; }
 }

@@ -13,8 +13,11 @@ internal class TodoListConfiguration : IEntityTypeConfiguration<TodoList>
             .IsRequired()
             .HasMaxLength(200);
 
+        builder.Property(t => t.IsDeleted)
+            .IsRequired();
+
         builder.HasMany(tl => tl.Todos)
-            .WithOne()
+            .WithOne(t => t.TodoList)
             .HasForeignKey(t => t.TodoListId)
             .OnDelete(DeleteBehavior.Cascade);
     }
