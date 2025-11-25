@@ -9,6 +9,7 @@ using TodoApi.IBusinessLogic.IServices;
 using TodoApi.IDataAccess;
 using TodoApi.Infrastructure.BackgroundJobs;
 using TodoApi.Infrastructure.BackgroundJobs.Worker;
+using TodoApi.Infrastructure.Interfaces;
 
 namespace TodoApi.ServiceFactory;
 

@@ -1,7 +1,9 @@
-﻿using TodoApi.BusinessLogic.Interfaces;
+﻿using Microsoft.AspNetCore.SignalR;
+using TodoApi.BusinessLogic.Interfaces;
 using TodoApi.BusinessLogic.Mappers.ObjectToDto;
 using TodoApi.BusinessLogic.Utils;
 using TodoApi.Domain.Domain;
+using TodoApi.Hubs;
 using TodoApi.IBusinessLogic.Dtos.Request;
 using TodoApi.IBusinessLogic.Dtos.Response;
 using TodoApi.IBusinessLogic.IServices;
@@ -13,11 +15,13 @@ public class TodoService : ITodoService
 {
     private readonly IGenericRepository<Todo> _todoRepository;
     private readonly ITodoListInternalService _todoListService;
+    private readonly IHubContext<TodoHub> _hub;
 
-    public TodoService(IGenericRepository<Todo> todoRepository, ITodoListInternalService todoListService)
+    public TodoService(IGenericRepository<Todo> todoRepository, ITodoListInternalService todoListService, IHubContext<TodoHub> hub)
     {
         _todoRepository = todoRepository;
         _todoListService = todoListService;
+        _hub = hub;
     }
 
     public async Task<TodoResponseDto> Create(long todoListId, CreateTodoDto dto)
@@ -63,6 +67,8 @@ public class TodoService : ITodoService
         foreach (Todo todo in todosToUpdate)
         {
             todo.IsCompleted = true;
+
+            await _hub.Clients.All.SendAsync("TodoCompleted", todo.Id);
         }
 
         await _todoRepository.SaveChangesAsync();

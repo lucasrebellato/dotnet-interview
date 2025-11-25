@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using TodoApi.Filters;
+using TodoApi.Hubs;
 using TodoApi.ServiceFactory;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,8 +25,11 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(); 
 builder.Services.AddControllers();
 
+builder.Services.AddSignalR();
+
 // Add project services from the factory
 builder.Services.AddServices(builder.Configuration);
+
 
 var app = builder.Build();
 
@@ -42,5 +46,7 @@ app.UseCors("AllowAll");
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapHub<TodoHub>("/todoHub");
 
 app.Run();

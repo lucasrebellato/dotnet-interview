@@ -1,4 +1,4 @@
-﻿namespace TodoApi.Infrastructure.BackgroundJobs;
+﻿namespace TodoApi.Infrastructure.Interfaces;
 
 public interface IBackgroundTaskQueue
 {

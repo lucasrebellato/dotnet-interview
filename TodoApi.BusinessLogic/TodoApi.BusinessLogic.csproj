@@ -8,6 +8,7 @@
 
   <ItemGroup>
 	  <ProjectReference Include="..\TodoApi.Domain\TodoApi.Domain.csproj" />
+	  <ProjectReference Include="..\TodoApi.Hubs\TodoApi.Hubs.csproj" />
 	  <ProjectReference Include="..\TodoApi.IBusinessLogic\TodoApi.IBusinessLogic.csproj" />
 	  <ProjectReference Include="..\TodoApi.IDataAccess\TodoApi.IDataAccess.csproj" />
   </ItemGroup>

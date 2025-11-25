@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using TodoApi.IBusinessLogic.IServices;
+using TodoApi.Infrastructure.Interfaces;
 
 namespace TodoApi.Infrastructure.BackgroundJobs;
 

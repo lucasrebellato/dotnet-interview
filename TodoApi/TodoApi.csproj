@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TodoApi.Filters\TodoApi.Filters.csproj" />
+    <ProjectReference Include="..\TodoApi.Hubs\TodoApi.Hubs.csproj" />
     <ProjectReference Include="..\TodoApi.IBusinessLogic\TodoApi.IBusinessLogic.csproj" />
     <ProjectReference Include="..\TodoApi.ServiceFactory\TodoApi.ServiceFactory.csproj" />
   </ItemGroup>
