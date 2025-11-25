@@ -11,7 +11,8 @@ public static class TodoListToDto
         {
             Id = todoList.Id,
             Name = todoList.Name,
-            Todos = todoList.Todos?.Select(t => t.Map()).ToList()
+            Todos = todoList.Todos?.Select(t => t.Map()).ToList(),
+            AllTodosCompleted = todoList.Todos!.Any() && todoList.Todos!.All(t => t.IsCompleted)
         };
     }
 }

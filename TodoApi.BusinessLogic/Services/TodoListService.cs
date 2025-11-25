@@ -44,7 +44,7 @@ public class TodoListService : ITodoListService, ITodoListInternalService
 
     public async Task<List<TodoListResponseDto>> GetAll()
     {
-        List<TodoList> todoLists = await _todoListRepository.GetAll(t => true, []);
+        List<TodoList> todoLists = await _todoListRepository.GetAll(t => true, ["Todos"]);
 
         List<TodoListResponseDto> listResponse = todoLists.Select(TodoListToDto.Map).ToList();
 
