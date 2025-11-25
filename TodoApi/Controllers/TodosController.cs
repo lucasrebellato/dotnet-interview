@@ -4,7 +4,7 @@ using TodoApi.IBusinessLogic.IServices;
 
 namespace TodoApi.Controllers;
 
-[Route("api/todolists/{todoListId}/todo")]
+[Route("api/todolists/{todoListId}/todos")]
 [ApiController]
 public class TodosController : ControllerBase
 {
