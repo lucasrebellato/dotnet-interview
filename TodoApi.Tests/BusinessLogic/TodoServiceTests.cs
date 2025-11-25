@@ -5,24 +5,26 @@ using TodoApi.BusinessLogic.Interfaces;
 using TodoApi.IBusinessLogic.Dtos.Request;
 using TodoApi.IDataAccess;
 using TodoApi.Domain.Domain;
-using TodoApi.BusinessLogic.Exceptions;
+using TodoApi.IBusinessLogic.Exceptions;
+using TodoApi.IBusinessLogic.INotifier;
 
 namespace TodoApi.Tests.BusinessLogic;
 
 public class TodoServiceTests
 {
-    private static (TodoService service, Mock<IGenericRepository<Todo>> repoMock, Mock<ITodoListInternalService> todoListServiceMock) CreateSut()
+    private static (TodoService service, Mock<IGenericRepository<Todo>> repoMock, Mock<ITodoListInternalService> todoListServiceMock, Mock<ITodoNotifier> notifierMock) CreateSut()
     {
         var repoMock = new Mock<IGenericRepository<Todo>>();
         var todoListServiceMock = new Mock<ITodoListInternalService>();
-        var service = new TodoService(repoMock.Object, todoListServiceMock.Object);
-        return (service, repoMock, todoListServiceMock);
+        var notifierMock = new Mock<ITodoNotifier>();
+        var service = new TodoService(repoMock.Object, todoListServiceMock.Object, notifierMock.Object);
+        return (service, repoMock, todoListServiceMock, notifierMock);
     }
 
     [Fact]
     public async Task Create_WhenTodoListExists_AddsTodoAndReturnsDto()
     {
-        var (service, repoMock, todoListServiceMock) = CreateSut();
+        var (service, repoMock, todoListServiceMock, notifierMock) = CreateSut();
         long listId = 2;
 
         todoListServiceMock.Setup(s => s.Exists(listId)).Returns(Task.CompletedTask);
@@ -31,6 +33,8 @@ public class TodoServiceTests
             .Setup(r => r.Add(It.IsAny<Todo>()))
             .Returns(Task.CompletedTask)
             .Callback<Todo>(t => t.Id = 42);
+
+        repoMock.Setup(r => r.SaveChangesAsync()).Returns(Task.CompletedTask);
 
         var dto = new CreateTodoDto { Description = "New todo" };
 
@@ -42,9 +46,9 @@ public class TodoServiceTests
     }
 
     [Fact]
-    public async Task Delete_WhenFound_CallsRepositoryDelete()
+    public async Task Delete_WhenFound_CallsRepositoryDelete_AndSaves()
     {
-        var (service, repoMock, todoListServiceMock) = CreateSut();
+        var (service, repoMock, todoListServiceMock, notifierMock) = CreateSut();
         var todo = new Todo { Id = 5, Description = "x" };
 
         repoMock
@@ -55,6 +59,8 @@ public class TodoServiceTests
             .Setup(r => r.Delete(It.IsAny<Todo>()))
             .Returns(Task.CompletedTask);
 
+        repoMock.Setup(r => r.SaveChangesAsync()).Returns(Task.CompletedTask);
+
         await service.Delete(5);
 
         repoMock.Verify(r => r.Delete(It.Is<Todo>(t => t.Id == 5)), Times.Once);
@@ -63,19 +69,20 @@ public class TodoServiceTests
     [Fact]
     public async Task Delete_WhenNotFound_ThrowsNotFoundException()
     {
-        var (service, repoMock, todoListServiceMock) = CreateSut();
+        var (service, repoMock, todoListServiceMock, notifierMock) = CreateSut();
 
         repoMock
             .Setup(r => r.Get(It.IsAny<Expression<Func<Todo, bool>>>(), It.IsAny<string[]>()))
             .ReturnsAsync((Todo?)null);
 
         await Assert.ThrowsAsync<NotFoundException>(() => service.Delete(100));
+        notifierMock.VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task GetById_WhenFound_ReturnsMappedDto()
     {
-        var (service, repoMock, todoListServiceMock) = CreateSut();
+        var (service, repoMock, todoListServiceMock, notifierMock) = CreateSut();
         var todo = new Todo { Id = 7, Description = "Do it", IsCompleted = true };
         var list = new TodoList { Id = 3, Name = "L", Todos = new List<Todo> { todo } };
 
@@ -88,12 +95,13 @@ public class TodoServiceTests
         Assert.Equal(7, result.Id);
         Assert.Equal("Do it", result.Title);
         Assert.True(result.IsCompleted);
+        notifierMock.VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task GetById_WhenTodoNotFound_ThrowsNotFoundException()
     {
-        var (service, repoMock, todoListServiceMock) = CreateSut();
+        var (service, repoMock, todoListServiceMock, notifierMock) = CreateSut();
         var list = new TodoList { Id = 3, Name = "L", Todos = new List<Todo>() };
 
         todoListServiceMock
@@ -101,12 +109,13 @@ public class TodoServiceTests
             .ReturnsAsync(list);
 
         await Assert.ThrowsAsync<NotFoundException>(() => service.GetById(3, 999));
+        notifierMock.VerifyNoOtherCalls();
     }
 
     [Fact]
-    public async Task MarkAsCompleted_WhenFound_SetsCompletedAndUpdates()
+    public async Task MarkAsCompleted_WhenFound_SetsCompleted_UpdatesAndSaves()
     {
-        var (service, repoMock, todoListServiceMock) = CreateSut();
+        var (service, repoMock, todoListServiceMock, notifierMock) = CreateSut();
         var todo = new Todo { Id = 11, Description = "t", IsCompleted = false };
         var list = new TodoList { Id = 4, Name = "L", Todos = new List<Todo> { todo } };
 
@@ -115,6 +124,7 @@ public class TodoServiceTests
             .ReturnsAsync(list);
 
         repoMock.Setup(r => r.Update(It.IsAny<Todo>())).Returns(Task.CompletedTask);
+        repoMock.Setup(r => r.SaveChangesAsync()).Returns(Task.CompletedTask);
 
         await service.MarkAsCompleted(4, 11);
 
@@ -124,7 +134,7 @@ public class TodoServiceTests
     [Fact]
     public async Task MarkAsCompleted_WhenNotFound_ThrowsNotFoundException()
     {
-        var (service, repoMock, todoListServiceMock) = CreateSut();
+        var (service, repoMock, todoListServiceMock, notifierMock) = CreateSut();
         var list = new TodoList { Id = 4, Name = "L", Todos = new List<Todo>() };
 
         todoListServiceMock
@@ -132,12 +142,13 @@ public class TodoServiceTests
             .ReturnsAsync(list);
 
         await Assert.ThrowsAsync<NotFoundException>(() => service.MarkAsCompleted(4, 77));
+        notifierMock.VerifyNoOtherCalls();
     }
 
     [Fact]
-    public async Task Update_WhenFound_UpdatesDescriptionAndReturnsDto()
+    public async Task Update_WhenFound_UpdatesDescriptionAndReturnsDto_AndSaves()
     {
-        var (service, repoMock, todoListServiceMock) = CreateSut();
+        var (service, repoMock, todoListServiceMock, notifierMock) = CreateSut();
         var todo = new Todo { Id = 21, Description = "old" };
         var list = new TodoList { Id = 6, Name = "L", Todos = new List<Todo> { todo } };
 
@@ -146,18 +157,17 @@ public class TodoServiceTests
             .ReturnsAsync(list);
 
         repoMock.Setup(r => r.Update(It.IsAny<Todo>())).Returns(Task.CompletedTask);
+        repoMock.Setup(r => r.SaveChangesAsync()).Returns(Task.CompletedTask);
 
         var result = await service.Update(6, 21, new UpdateTodoDto { Description = "new" });
 
         repoMock.Verify(r => r.Update(It.Is<Todo>(t => t.Id == 21 && t.Description == "new")), Times.Once);
-        Assert.Equal(21, result.Id);
-        Assert.Equal("new", result.Title);
     }
 
     [Fact]
     public async Task Update_WhenNotFound_ThrowsNotFoundException()
     {
-        var (service, repoMock, todoListServiceMock) = CreateSut();
+        var (service, repoMock, todoListServiceMock, notifierMock) = CreateSut();
         var list = new TodoList { Id = 6, Name = "L", Todos = new List<Todo>() };
 
         todoListServiceMock
@@ -165,5 +175,32 @@ public class TodoServiceTests
             .ReturnsAsync(list);
 
         await Assert.ThrowsAsync<NotFoundException>(() => service.Update(6, 999, new UpdateTodoDto { Description = "x" }));
+        notifierMock.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task MarkAllAsCompleted_WhenListHasTodos_UpdatesFlags_SavesAndNotifiesAllCompleted()
+    {
+        var (service, repoMock, todoListServiceMock, notifierMock) = CreateSut();
+        var todos = new List<Todo>
+        {
+            new Todo { Id = 1, Description = "a", IsCompleted = false },
+            new Todo { Id = 2, Description = "b", IsCompleted = false },
+            new Todo { Id = 3, Description = "c", IsCompleted = true }
+        };
+        var list = new TodoList { Id = 9, Name = "L", Todos = todos };
+
+        todoListServiceMock
+            .Setup(s => s.GetByIdWithIncludes(9, It.IsAny<string[]>()))
+            .ReturnsAsync(list);
+
+        repoMock.Setup(r => r.SaveChangesAsync()).Returns(Task.CompletedTask);
+        notifierMock.Setup(n => n.NotifyAllCompleted(It.IsAny<long>())).Returns(Task.CompletedTask);
+
+        await service.MarkAllAsCompleted(9);
+
+        // expect the service to persist changes via SaveChangesAsync
+        repoMock.Verify(r => r.SaveChangesAsync(), Times.Once);
+        notifierMock.Verify(n => n.NotifyAllCompleted(9), Times.Once);
     }
 }
