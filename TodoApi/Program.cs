@@ -30,6 +30,17 @@ builder.Services.AddSignalR();
 // Add project services from the factory
 builder.Services.AddServices(builder.Configuration);
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("SignalRPolicy", policy =>
+    {
+        policy.WithOrigins("http://127.0.0.1:5500")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+
 
 var app = builder.Build();
 
@@ -41,7 +52,7 @@ app.UseSwaggerUI(options =>
     options.RoutePrefix = ""; // Swagger en la raíz
 });
 
-app.UseCors("AllowAll");
+app.UseCors("SignalRPolicy");
 
 app.UseAuthorization();
 

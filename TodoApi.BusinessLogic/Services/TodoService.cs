@@ -6,6 +6,7 @@ using TodoApi.Domain.Domain;
 using TodoApi.Hubs;
 using TodoApi.IBusinessLogic.Dtos.Request;
 using TodoApi.IBusinessLogic.Dtos.Response;
+using TodoApi.IBusinessLogic.INotifier;
 using TodoApi.IBusinessLogic.IServices;
 using TodoApi.IDataAccess;
 
@@ -15,13 +16,13 @@ public class TodoService : ITodoService
 {
     private readonly IGenericRepository<Todo> _todoRepository;
     private readonly ITodoListInternalService _todoListService;
-    private readonly IHubContext<TodoHub> _hub;
+    private readonly ITodoNotifier _notifier;
 
-    public TodoService(IGenericRepository<Todo> todoRepository, ITodoListInternalService todoListService, IHubContext<TodoHub> hub)
+    public TodoService(IGenericRepository<Todo> todoRepository, ITodoListInternalService todoListService, ITodoNotifier notifier)
     {
         _todoRepository = todoRepository;
         _todoListService = todoListService;
-        _hub = hub;
+        _notifier = notifier;
     }
 
     public async Task<TodoResponseDto> Create(long todoListId, CreateTodoDto dto)
@@ -68,10 +69,11 @@ public class TodoService : ITodoService
         {
             todo.IsCompleted = true;
 
-            await _hub.Clients.All.SendAsync("TodoCompleted", todo.Id);
+            await _notifier.NotifyTodoCompleted(todo.Id);
         }
 
         await _todoRepository.SaveChangesAsync();
+        await _notifier.NotifyAllCompleted(todoListId);
     }
 
     public async Task MarkAsCompleted(long todoListId, long id)
