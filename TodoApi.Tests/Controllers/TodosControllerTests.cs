@@ -103,15 +103,32 @@ public class TodosControllerTests
     {
         var serviceMock = new Mock<ITodoService>();
         var backgroundMock = new Mock<IBackgroundJobService>();
-        serviceMock.Setup(s => s.MarkAsCompleted(4, 12)).Returns(Task.CompletedTask);
+        serviceMock.Setup(s => s.MarkAsCompleted(4, 12))
+            .ReturnsAsync(new TodoResponseDto { Id = 12, Title = "Completed", Description = "desc", IsCompleted = true });
 
         var controller = CreateController(serviceMock, backgroundMock);
 
         var result = await controller.MarkAsCompleted(4, 12);
 
-        Assert.IsType<NoContentResult>(result);
+        Assert.IsType<OkObjectResult>(result);
         serviceMock.Verify(s => s.MarkAsCompleted(4, 12), Times.Once);
         backgroundMock.Verify(b => b.EnqueueMarkAllTodosCompleted(It.IsAny<long>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task MarkAsIncompleted_WhenCalled_ReturnsOk_AndCallsService()
+    {
+        var serviceMock = new Mock<ITodoService>();
+        var backgroundMock = new Mock<IBackgroundJobService>();
+        serviceMock.Setup(s => s.MarkAsIncompleted(4, 12))
+            .ReturnsAsync(new TodoResponseDto { Id = 12, Title = "Uncompleted", Description = "desc", IsCompleted = false });
+                
+        var controller = CreateController(serviceMock, backgroundMock);
+
+        var result = await controller.MarkAsUncompleted(4, 12);
+
+        Assert.IsType<OkObjectResult>(result);
+        serviceMock.Verify(s => s.MarkAsIncompleted(4, 12), Times.Once);
     }
 
     [Fact]

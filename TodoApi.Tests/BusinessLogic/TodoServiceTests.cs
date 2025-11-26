@@ -74,7 +74,7 @@ public class TodoServiceTests
         var (service, repoMock, todoListServiceMock, notifierMock) = CreateSut();
 
         todoListServiceMock
-            .Setup(s => s.GetByIdWithIncludes(1, It.IsAny<string[]>()))
+            .Setup(s => s.GetByIdWithIncludes(1, It.IsAny<string[]>()))!
             .ReturnsAsync((TodoList?)null);
 
         await Assert.ThrowsAsync<NotFoundException>(() => service.Delete(1, 100));
@@ -143,6 +143,40 @@ public class TodoServiceTests
             .ReturnsAsync(list);
 
         await Assert.ThrowsAsync<NotFoundException>(() => service.MarkAsCompleted(4, 77));
+        notifierMock.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task MarkAsIncompleted_WhenFound_SetsIncomplete_UpdatesAndReturnsDto()
+    {
+        var (service, repoMock, todoListServiceMock, notifierMock) = CreateSut();
+        var todo = new Todo { Id = 12, Title = "t", Description = "t desc", IsCompleted = true, TodoListId = 4 };
+        var list = new TodoList { Id = 4, Name = "L", Todos = new List<Todo> { todo } };
+
+        todoListServiceMock
+            .Setup(s => s.GetByIdWithIncludes(4, It.IsAny<string[]>()))
+            .ReturnsAsync(list);
+
+        repoMock.Setup(r => r.Update(It.IsAny<Todo>())).Returns(Task.CompletedTask);
+
+        var result = await service.MarkAsIncompleted(4, 12);
+
+        repoMock.Verify(r => r.Update(It.Is<Todo>(t => t.Id == 12 && t.IsCompleted == false)), Times.Once);
+        Assert.Equal(12, result.Id);
+        Assert.False(result.IsCompleted);
+    }
+
+    [Fact]
+    public async Task MarkAsIncompleted_WhenNotFound_ThrowsNotFoundException()
+    {
+        var (service, repoMock, todoListServiceMock, notifierMock) = CreateSut();
+        var list = new TodoList { Id = 4, Name = "L", Todos = new List<Todo>() };
+
+        todoListServiceMock
+            .Setup(s => s.GetByIdWithIncludes(4, It.IsAny<string[]>()))
+            .ReturnsAsync(list);
+
+        await Assert.ThrowsAsync<NotFoundException>(() => service.MarkAsIncompleted(4, 77));
         notifierMock.VerifyNoOtherCalls();
     }
 
