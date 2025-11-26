@@ -18,6 +18,8 @@ public class TodosController : ControllerBase
     }
 
     [HttpPost]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> Create([FromRoute] long todoListId, [FromBody] CreateTodoDto payload)
     {
         var response = await _todoService.Create(todoListId, payload);
@@ -25,6 +27,8 @@ public class TodosController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> GetById([FromRoute] long todoListId, [FromRoute] long id)
     {
         var response = await _todoService.GetById(todoListId, id);
@@ -32,6 +36,8 @@ public class TodosController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> Update([FromRoute] long todoListId, [FromRoute] long id, [FromBody] UpdateTodoDto payload)
     {
         var response = await _todoService.Update(todoListId, id, payload);
@@ -39,6 +45,8 @@ public class TodosController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> Delete([FromRoute] long todoListId, [FromRoute] long id)
     {
         await _todoService.Delete(todoListId, id);
@@ -46,20 +54,25 @@ public class TodosController : ControllerBase
     }
 
     [HttpPost("{id}/complete")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> MarkAsCompleted([FromRoute] long todoListId, [FromRoute] long id)
     {
-        await _todoService.MarkAsCompleted(todoListId, id);
-        return NoContent();
+        var response = await _todoService.MarkAsCompleted(todoListId, id);
+        return Ok(response);
     }
 
     [HttpPost("{id}/incomplete")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> MarkAsUncompleted([FromRoute] long todoListId, [FromRoute] long id)
     {
-        await _todoService.MarkAsIncompleted(todoListId, id);
-        return NoContent();
+        var response = await _todoService.MarkAsIncompleted(todoListId, id);
+        return Ok(response);
     }
 
     [HttpPost("complete-all")]
+    [ProducesResponseType(StatusCodes.Status202Accepted)]
     public ActionResult MarkAllAsCompleted([FromRoute] long todoListId)
     {
         _backgroundJobService.EnqueueMarkAllTodosCompleted(todoListId);

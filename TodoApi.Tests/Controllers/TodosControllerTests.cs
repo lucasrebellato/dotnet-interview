@@ -18,7 +18,7 @@ public class TodosControllerTests
     {
         var serviceMock = new Mock<ITodoService>();
         var backgroundMock = new Mock<IBackgroundJobService>();
-        var todoResponse = new TodoResponseDto { Id = 10, Title = "T1", IsCompleted = false };
+        var todoResponse = new TodoResponseDto { Id = 10, Title = "T1", Description = "desc", IsCompleted = false };
 
         serviceMock
             .Setup(s => s.Create(2, It.IsAny<CreateTodoDto>()))
@@ -26,7 +26,7 @@ public class TodosControllerTests
 
         var controller = CreateController(serviceMock, backgroundMock);
 
-        var result = await controller.Create(2, new CreateTodoDto { Description = "Hola" });
+        var result = await controller.Create(2, new CreateTodoDto { Title = "T1", Description = "desc" });
 
         var created = Assert.IsType<CreatedAtActionResult>(result);
         var value = Assert.IsType<TodoResponseDto>(created.Value);
@@ -41,7 +41,7 @@ public class TodosControllerTests
     {
         var serviceMock = new Mock<ITodoService>();
         var backgroundMock = new Mock<IBackgroundJobService>();
-        var todoResponse = new TodoResponseDto { Id = 5, Title = "Task", IsCompleted = true };
+        var todoResponse = new TodoResponseDto { Id = 5, Title = "Task", Description = "desc", IsCompleted = true };
 
         serviceMock
             .Setup(s => s.GetById(2, 5))
@@ -64,7 +64,7 @@ public class TodosControllerTests
     {
         var serviceMock = new Mock<ITodoService>();
         var backgroundMock = new Mock<IBackgroundJobService>();
-        var updated = new TodoResponseDto { Id = 7, Title = "Updated", IsCompleted = false };
+        var updated = new TodoResponseDto { Id = 7, Title = "Updated", Description = "updated desc", IsCompleted = false };
 
         serviceMock
             .Setup(s => s.Update(3, 7, It.IsAny<UpdateTodoDto>()))
@@ -72,7 +72,7 @@ public class TodosControllerTests
 
         var controller = CreateController(serviceMock, backgroundMock);
 
-        var result = await controller.Update(3, 7, new UpdateTodoDto { Description = "Updated" });
+        var result = await controller.Update(3, 7, new UpdateTodoDto { Title = "Updated", Description = "updated desc" });
 
         var ok = Assert.IsType<OkObjectResult>(result);
         var value = Assert.IsType<TodoResponseDto>(ok.Value);
@@ -87,14 +87,14 @@ public class TodosControllerTests
     {
         var serviceMock = new Mock<ITodoService>();
         var backgroundMock = new Mock<IBackgroundJobService>();
-        serviceMock.Setup(s => s.Delete(9)).Returns(Task.CompletedTask);
+        serviceMock.Setup(s => s.Delete(1, 9)).Returns(Task.CompletedTask);
 
         var controller = CreateController(serviceMock, backgroundMock);
 
         var result = await controller.Delete(1, 9);
 
         Assert.IsType<NoContentResult>(result);
-        serviceMock.Verify(s => s.Delete(9), Times.Once);
+        serviceMock.Verify(s => s.Delete(1, 9), Times.Once);
         backgroundMock.Verify(b => b.EnqueueMarkAllTodosCompleted(It.IsAny<long>()), Times.Never);
     }
 
@@ -103,15 +103,32 @@ public class TodosControllerTests
     {
         var serviceMock = new Mock<ITodoService>();
         var backgroundMock = new Mock<IBackgroundJobService>();
-        serviceMock.Setup(s => s.MarkAsCompleted(4, 12)).Returns(Task.CompletedTask);
+        serviceMock.Setup(s => s.MarkAsCompleted(4, 12))
+            .ReturnsAsync(new TodoResponseDto { Id = 12, Title = "Completed", Description = "desc", IsCompleted = true });
 
         var controller = CreateController(serviceMock, backgroundMock);
 
         var result = await controller.MarkAsCompleted(4, 12);
 
-        Assert.IsType<NoContentResult>(result);
+        Assert.IsType<OkObjectResult>(result);
         serviceMock.Verify(s => s.MarkAsCompleted(4, 12), Times.Once);
         backgroundMock.Verify(b => b.EnqueueMarkAllTodosCompleted(It.IsAny<long>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task MarkAsIncompleted_WhenCalled_ReturnsOk_AndCallsService()
+    {
+        var serviceMock = new Mock<ITodoService>();
+        var backgroundMock = new Mock<IBackgroundJobService>();
+        serviceMock.Setup(s => s.MarkAsIncompleted(4, 12))
+            .ReturnsAsync(new TodoResponseDto { Id = 12, Title = "Uncompleted", Description = "desc", IsCompleted = false });
+                
+        var controller = CreateController(serviceMock, backgroundMock);
+
+        var result = await controller.MarkAsUncompleted(4, 12);
+
+        Assert.IsType<OkObjectResult>(result);
+        serviceMock.Verify(s => s.MarkAsIncompleted(4, 12), Times.Once);
     }
 
     [Fact]

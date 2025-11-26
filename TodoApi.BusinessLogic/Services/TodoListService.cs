@@ -19,11 +19,6 @@ public class TodoListService : ITodoListService, ITodoListInternalService
         _todoListRepository = todoListRepository;
     }
 
-    public Task AddTodo(long id, Todo todo)
-    {
-        throw new NotImplementedException();
-    }
-
     public async Task<TodoListResponseDto> Create(CreateTodoListDto dto)
     {
         TodoList todoList = DtoToTodoList.Map(dto);

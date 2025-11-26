@@ -1,10 +1,8 @@
-﻿using Microsoft.AspNetCore.SignalR;
-using TodoApi.BusinessLogic.Interfaces;
+﻿using TodoApi.BusinessLogic.Interfaces;
 using TodoApi.BusinessLogic.Mappers.DtoToObject;
 using TodoApi.BusinessLogic.Mappers.ObjectToDto;
 using TodoApi.BusinessLogic.Utils;
 using TodoApi.Domain.Domain;
-using TodoApi.Hubs;
 using TodoApi.IBusinessLogic.Dtos.Request;
 using TodoApi.IBusinessLogic.Dtos.Response;
 using TodoApi.IBusinessLogic.INotifier;
@@ -67,22 +65,26 @@ public class TodoService : ITodoService
         await _notifier.NotifyAllCompleted(todoListId);
     }
 
-    public async Task MarkAsCompleted(long todoListId, long id)
+    public async Task<TodoResponseDto> MarkAsCompleted(long todoListId, long id)
     {
         Todo todo = await GetTodoFromListOrThrow(todoListId, id);
 
         todo!.MarkAsCompleted();
 
         await _todoRepository.Update(todo);
+
+        return TodoToDto.Map(todo);
     }
 
-    public async Task MarkAsIncompleted(long todoListId, long id)
+    public async Task<TodoResponseDto> MarkAsIncompleted(long todoListId, long id)
     {
         Todo todo = await GetTodoFromListOrThrow(todoListId, id);
 
         todo!.MarkAsIncomplete();
 
         await _todoRepository.Update(todo);
+
+        return TodoToDto.Map(todo);
     }
 
     public async Task<TodoResponseDto> Update(long todoListId, long id, UpdateTodoDto dto)
@@ -99,6 +101,8 @@ public class TodoService : ITodoService
     private async Task<Todo> GetTodoFromListOrThrow(long todoListId, long id)
     {
         TodoList todoList = await _todoListService.GetByIdWithIncludes(todoListId, ["Todos"]);
+
+        Utils<TodoList>.CheckForNullValue(todoList);
 
         Todo? todo = todoList.Todos.FirstOrDefault(t => t.Id == id);
 
