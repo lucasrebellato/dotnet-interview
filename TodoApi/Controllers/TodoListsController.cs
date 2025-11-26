@@ -1,92 +1,53 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using TodoApi.Dtos;
-using TodoApi.Models;
+using TodoApi.IBusinessLogic.Dtos.Request;
+using TodoApi.IBusinessLogic.Dtos.Response;
+using TodoApi.IBusinessLogic.Interfaces;
 
-namespace TodoApi.Controllers
+namespace TodoApi.Controllers;
+
+[Route("api/todolists")]
+[ApiController]
+public class TodoListsController : ControllerBase
 {
-    [Route("api/todolists")]
-    [ApiController]
-    public class TodoListsController : ControllerBase
+    private readonly ITodoListService _todoListService;
+
+    public TodoListsController(ITodoListService todoListService)
     {
-        private readonly TodoContext _context;
+        _todoListService = todoListService;
+    }
 
-        public TodoListsController(TodoContext context)
-        {
-            _context = context;
-        }
+    [HttpGet]
+    public async Task<ActionResult<IList<TodoListResponseDto>>> GetAll()
+    {
+        List<TodoListResponseDto> response = await _todoListService.GetAll();
+        return Ok(response);
+    }
 
-        // GET: api/todolists
-        [HttpGet]
-        public async Task<ActionResult<IList<TodoList>>> GetTodoLists()
-        {
-            return Ok(await _context.TodoList.ToListAsync());
-        }
+    [HttpGet("{id}")]
+    public async Task<ActionResult<TodoListResponseDto>> GetById(long id)
+    {
+        TodoListResponseDto reponse = await _todoListService.GetById(id);
+        return Ok(reponse);
+    }
 
-        // GET: api/todolists/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<TodoList>> GetTodoList(long id)
-        {
-            var todoList = await _context.TodoList.FindAsync(id);
+    [HttpPut("{id}")]
+    public async Task<ActionResult<TodoListResponseDto>> Update(long id, UpdateTodoListDto payload)
+    {
+        TodoListResponseDto response = await _todoListService.Update(id, payload);
+        return Ok(response);
+    }
 
-            if (todoList == null)
-            {
-                return NotFound();
-            }
+    [HttpPost]
+    public async Task<ActionResult<TodoListResponseDto>> Create(CreateTodoListDto payload)
+    {
+        TodoListResponseDto reponse = await _todoListService.Create(payload);
+        return CreatedAtAction(nameof(Create), reponse);
+    }
 
-            return Ok(todoList);
-        }
-
-        // PUT: api/todolists/5
-        // To protect from over-posting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<ActionResult> PutTodoList(long id, UpdateTodoList payload)
-        {
-            var todoList = await _context.TodoList.FindAsync(id);
-
-            if (todoList == null)
-            {
-                return NotFound();
-            }
-
-            todoList.Name = payload.Name;
-            await _context.SaveChangesAsync();
-
-            return Ok(todoList);
-        }
-
-        // POST: api/todolists
-        // To protect from over-posting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<TodoList>> PostTodoList(CreateTodoList payload)
-        {
-            var todoList = new TodoList { Name = payload.Name };
-
-            _context.TodoList.Add(todoList);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetTodoList", new { id = todoList.Id }, todoList);
-        }
-
-        // DELETE: api/todolists/5
-        [HttpDelete("{id}")]
-        public async Task<ActionResult> DeleteTodoList(long id)
-        {
-            var todoList = await _context.TodoList.FindAsync(id);
-            if (todoList == null)
-            {
-                return NotFound();
-            }
-
-            _context.TodoList.Remove(todoList);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
-
-        private bool TodoListExists(long id)
-        {
-            return (_context.TodoList?.Any(e => e.Id == id)).GetValueOrDefault();
-        }
+    [HttpDelete("{id}")]
+    public async Task<ActionResult> Delete(long id)
+    {
+        await _todoListService.Delete(id);
+        return NoContent();
     }
 }
