@@ -9,7 +9,7 @@ public interface ITodoService
     Task Delete(long todoListId, long id);
     Task<TodoResponseDto> GetById(long todoListId, long id);
     Task<TodoResponseDto> Update(long todoListId, long id, UpdateTodoDto dto);
-    Task MarkAsCompleted(long todoListId, long id);
-    Task MarkAsIncompleted(long todoListId, long id);
+    Task<TodoResponseDto> MarkAsCompleted(long todoListId, long id);
+    Task<TodoResponseDto> MarkAsIncompleted(long todoListId, long id);
     Task MarkAllAsCompleted(long todoListId);
 }

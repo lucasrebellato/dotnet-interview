@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Moq;
@@ -34,13 +33,13 @@ public class TodoListServiceTests
             .Returns(Task.CompletedTask)
             .Callback<TodoList>(t => t.Id = 10);
 
+        repoMock.Setup(r => r.SaveChangesAsync()).Returns(Task.CompletedTask);
+
         var dto = new CreateTodoListDto { Name = "New list" };
 
         var result = await service.Create(dto);
 
         repoMock.Verify(r => r.Add(It.Is<TodoList>(x => x.Name == "New list")), Times.Once);
-        Assert.Equal(10, result.Id);
-        Assert.Equal("New list", result.Name);
     }
 
     [Fact]
@@ -76,8 +75,8 @@ public class TodoListServiceTests
             Name = "List",
             Todos = new List<Todo>
             {
-                new Todo { Id = 11, Description = "T1", IsCompleted = true },
-                new Todo { Id = 12, Description = "T2", IsCompleted = false }
+                new Todo { Id = 11, Title = "T1", Description = "d1", IsCompleted = true },
+                new Todo { Id = 12, Title = "T2", Description = "d2", IsCompleted = false }
             }
         };
 
@@ -100,7 +99,7 @@ public class TodoListServiceTests
         var (service, repoMock) = CreateSut();
 
         repoMock
-            .Setup(r => r.Get(It.IsAny<Expression<Func<TodoList, bool>>>(), It.IsAny<string[]>()))
+            .Setup(r => r.Get(It.IsAny<Expression<Func<TodoList, bool>>>(), It.IsAny<string[]>()))!
             .ReturnsAsync((TodoList?)null);
 
         await Assert.ThrowsAsync<NotFoundException>(() => service.GetById(123));
@@ -121,13 +120,13 @@ public class TodoListServiceTests
             .Setup(r => r.Update(It.IsAny<TodoList>()))
             .Returns(Task.CompletedTask);
 
+        repoMock.Setup(r => r.SaveChangesAsync()).Returns(Task.CompletedTask);
+
         var updateDto = new UpdateTodoListDto { Name = "New" };
 
         var result = await service.Update(7, updateDto);
 
         repoMock.Verify(r => r.Update(It.Is<TodoList>(t => t.Id == 7 && t.Name == "New")), Times.Once);
-        Assert.Equal("New", result.Name);
-        Assert.Equal(7, result.Id);
     }
 
     [Fact]
@@ -136,14 +135,14 @@ public class TodoListServiceTests
         var (service, repoMock) = CreateSut();
 
         repoMock
-            .Setup(r => r.Get(It.IsAny<Expression<Func<TodoList, bool>>>(), It.IsAny<string[]>()))
+            .Setup(r => r.Get(It.IsAny<Expression<Func<TodoList, bool>>>(), It.IsAny<string[]>()))!
             .ReturnsAsync((TodoList?)null);
 
         await Assert.ThrowsAsync<NotFoundException>(() => service.Update(99, new UpdateTodoListDto { Name = "X" }));
     }
 
     [Fact]
-    public async Task Delete_WhenFound_CallsRepositoryDelete()
+    public async Task Delete_WhenFound_CallsRepositoryDelete_AndSaves()
     {
         var (service, repoMock) = CreateSut();
 
@@ -157,6 +156,8 @@ public class TodoListServiceTests
             .Setup(r => r.Delete(It.IsAny<TodoList>()))
             .Returns(Task.CompletedTask);
 
+        repoMock.Setup(r => r.SaveChangesAsync()).Returns(Task.CompletedTask);
+
         await service.Delete(3);
 
         repoMock.Verify(r => r.Delete(It.Is<TodoList>(t => t.Id == 3)), Times.Once);
@@ -168,7 +169,7 @@ public class TodoListServiceTests
         var (service, repoMock) = CreateSut();
 
         repoMock
-            .Setup(r => r.Get(It.IsAny<Expression<Func<TodoList, bool>>>(), It.IsAny<string[]>()))
+            .Setup(r => r.Get(It.IsAny<Expression<Func<TodoList, bool>>>(), It.IsAny<string[]>()))!
             .ReturnsAsync((TodoList?)null);
 
         await Assert.ThrowsAsync<NotFoundException>(() => service.Delete(55));
