@@ -55,8 +55,6 @@ public class TodoListService : ITodoListService, ITodoListInternalService
     {
         TodoList todoList = await GetByIdWithIncludes(id, ["Todos"]);
 
-        Utils<TodoList>.CheckForNullValue(todoList);
-
         return TodoListToDto.Map(todoList);
     }
 
@@ -66,7 +64,8 @@ public class TodoListService : ITodoListService, ITodoListInternalService
 
         Utils<TodoList>.CheckForNullValue(todoList);
 
-        todoList.Name = dto.Name;
+        todoList.Update(dto.Name);
+
         await _todoListRepository.Update(todoList);
 
         return TodoListToDto.Map(todoList);
@@ -86,4 +85,5 @@ public class TodoListService : ITodoListService, ITodoListInternalService
 
         Utils<TodoList>.CheckForNullValue(todoList);
     }
+   
 }

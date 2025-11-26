@@ -72,7 +72,7 @@ public class TodoServiceTests
         var (service, repoMock, todoListServiceMock, notifierMock) = CreateSut();
 
         repoMock
-            .Setup(r => r.Get(It.IsAny<Expression<Func<Todo, bool>>>(), It.IsAny<string[]>()))
+            .Setup(r => r.Get(It.IsAny<Expression<Func<Todo, bool>>>(), It.IsAny<string[]>()))!
             .ReturnsAsync((Todo?)null);
 
         await Assert.ThrowsAsync<NotFoundException>(() => service.Delete(100));

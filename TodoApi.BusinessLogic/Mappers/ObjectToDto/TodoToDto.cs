@@ -5,12 +5,13 @@ namespace TodoApi.BusinessLogic.Mappers.ObjectToDto;
 
 public static class TodoToDto
 {
-    public static TodoResponseDto Map(this Todo todo)
+    public static TodoResponseDto Map(Todo todo)
     {
         return new TodoResponseDto
         {
             Id = todo.Id,
-            Title = todo.Description,
+            Title = todo.Title,
+            Description = todo.Description,
             IsCompleted = todo.IsCompleted,
         };
     }

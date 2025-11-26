@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using TodoApi.BusinessLogic.Interfaces;
+using TodoApi.BusinessLogic.Mappers.DtoToObject;
 using TodoApi.BusinessLogic.Mappers.ObjectToDto;
 using TodoApi.BusinessLogic.Utils;
 using TodoApi.Domain.Domain;
@@ -29,34 +30,25 @@ public class TodoService : ITodoService
     {
         await _todoListService.Exists(todoListId);
 
-        var todo = new Todo
-        {
-            Description = dto.Description,
-            TodoListId = todoListId
-        };
+        Todo todo = DtoToTodo.Map(dto, todoListId);
 
         await _todoRepository.Add(todo);
 
         return TodoToDto.Map(todo);
     }
 
-    public async Task Delete(long id)
+    public async Task Delete(long todoListId, long id)
     {
-        Todo todo = await _todoRepository.Get(x => x.Id == id, []);
-
-        Utils<Todo>.CheckForNullValue(todo);
+        Todo todo = await GetTodoFromListOrThrow(todoListId, id);
 
         await _todoRepository.Delete(todo);
     }
 
     public async Task<TodoResponseDto> GetById(long todoListId, long id)
     {
-        TodoList todoList = await _todoListService.GetByIdWithIncludes(todoListId, ["Todos"]);
+        Todo todo = await GetTodoFromListOrThrow(todoListId, id);
 
-        Todo todo = todoList.Todos.FirstOrDefault(t => t.Id == id);
-        Utils<Todo>.CheckForNullValue(todo);
-
-        return TodoToDto.Map(todo);
+        return TodoToDto.Map(todo!);
     }
 
     public async Task MarkAllAsCompleted(long todoListId)
@@ -67,8 +59,7 @@ public class TodoService : ITodoService
 
         foreach (Todo todo in todosToUpdate)
         {
-            todo.IsCompleted = true;
-
+            todo.MarkAsCompleted();
             await _notifier.NotifyTodoCompleted(todo.Id);
         }
 
@@ -78,27 +69,41 @@ public class TodoService : ITodoService
 
     public async Task MarkAsCompleted(long todoListId, long id)
     {
-        TodoList todoList = await _todoListService.GetByIdWithIncludes(todoListId, ["Todos"]);
+        Todo todo = await GetTodoFromListOrThrow(todoListId, id);
 
-        Todo todo = todoList.Todos.FirstOrDefault(t => t.Id == id);
-        Utils<Todo>.CheckForNullValue(todo);
+        todo!.MarkAsCompleted();
 
-        todo.IsCompleted = true;
+        await _todoRepository.Update(todo);
+    }
+
+    public async Task MarkAsIncompleted(long todoListId, long id)
+    {
+        Todo todo = await GetTodoFromListOrThrow(todoListId, id);
+
+        todo!.MarkAsIncomplete();
 
         await _todoRepository.Update(todo);
     }
 
     public async Task<TodoResponseDto> Update(long todoListId, long id, UpdateTodoDto dto)
     {
+        Todo todo = await GetTodoFromListOrThrow(todoListId, id);
+
+        todo!.Update(dto.Title, dto.Description);
+
+        await _todoRepository.Update(todo);
+
+        return TodoToDto.Map(todo);
+    }
+
+    private async Task<Todo> GetTodoFromListOrThrow(long todoListId, long id)
+    {
         TodoList todoList = await _todoListService.GetByIdWithIncludes(todoListId, ["Todos"]);
 
-        Todo todo = todoList.Todos.FirstOrDefault(t => t.Id == id);
+        Todo? todo = todoList.Todos.FirstOrDefault(t => t.Id == id);
+
         Utils<Todo>.CheckForNullValue(todo);
 
-        todo.Description = dto.Description;
-        
-        await _todoRepository.Update(todo);
-        
-        return TodoToDto.Map(todo);
+        return todo!;
     }
 }

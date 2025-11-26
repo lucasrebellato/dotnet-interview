@@ -10,6 +10,10 @@ internal class TodoConfiguration : IEntityTypeConfiguration<Todo>
     {
         builder.HasKey(t => t.Id);
 
+        builder.Property(t => t.Title)
+            .IsRequired()
+            .HasMaxLength(100);
+
         builder.Property(t => t.Description)
             .IsRequired()
             .HasMaxLength(500);

@@ -41,7 +41,7 @@ public class TodosController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<ActionResult> Delete([FromRoute] long todoListId, [FromRoute] long id)
     {
-        await _todoService.Delete(id);
+        await _todoService.Delete(todoListId, id);
         return NoContent();
     }
 
@@ -49,6 +49,13 @@ public class TodosController : ControllerBase
     public async Task<ActionResult> MarkAsCompleted([FromRoute] long todoListId, [FromRoute] long id)
     {
         await _todoService.MarkAsCompleted(todoListId, id);
+        return NoContent();
+    }
+
+    [HttpPost("{id}/incomplete")]
+    public async Task<ActionResult> MarkAsUncompleted([FromRoute] long todoListId, [FromRoute] long id)
+    {
+        await _todoService.MarkAsIncompleted(todoListId, id);
         return NoContent();
     }
 

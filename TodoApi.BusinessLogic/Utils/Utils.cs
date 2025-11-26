@@ -6,7 +6,7 @@ namespace TodoApi.BusinessLogic.Utils;
 public static class Utils<T>
     where T : class
 {
-    public static void CheckForNullValue(T value)
+    public static void CheckForNullValue(T? value)
     {
         if (value == null)
         {
