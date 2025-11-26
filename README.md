@@ -47,3 +47,13 @@ We strongly believe in giving back :rocket:. Let's work together [`Get in touch`
 - The route to connect with the SignalR hub is {apiUrl}/hubs/todos.
 
 - To use your own Database, update the ConnectionStrings:TodoContext in appsettings.Development.json file.
+
+## Se implementaron las funcionalidades solicitadas:
+- CRUD Todos y TodoLists
+
+## Se hizo uso de las siguientes herramientas y principios:
+- BackgroundServices, implementado en el paquete de infrastructure
+- SignalR implementado en el paquete de Hubs e Infrastructure
+- Principios SOLID, haciendo enfasis en SRP, OCP, ISP (interfaces internas), DIP.
+- Principios GRASP
+- Patron Repository
