@@ -10,7 +10,7 @@ public static class Utils<T>
     {
         if (value == null)
         {
-            throw new NotFoundException("Recurso no encontrado");
+            throw new NotFoundException("Resource not found");
         }
     }
 }
