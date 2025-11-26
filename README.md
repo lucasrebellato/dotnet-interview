@@ -48,12 +48,12 @@ We strongly believe in giving back :rocket:. Let's work together [`Get in touch`
 
 - To use your own Database, update the ConnectionStrings:TodoContext in appsettings.Development.json file.
 
-## Se implementaron las funcionalidades solicitadas:
-- CRUD Todos y TodoLists
+## The requested functionalities were implemented:
+- CRUD for Todos and TodoLists
 
-## Se hizo uso de las siguientes herramientas y principios:
-- BackgroundServices, implementado en el paquete de infrastructure
-- SignalR implementado en el paquete de Hubs e Infrastructure
-- Principios SOLID, haciendo enfasis en SRP, OCP, ISP (interfaces internas), DIP.
-- Principios GRASP
-- Patron Repository
+## The following tools and principles were used:
+- BackgroundServices, implemented in the Infrastructure package
+- SignalR, implemented in the Hubs and Infrastructure packages
+- SOLID principles, with emphasis on SRP, OCP, ISP (internal interfaces), and DIP.
+- GRASP principles
+- Repository pattern
