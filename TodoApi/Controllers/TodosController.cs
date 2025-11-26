@@ -53,7 +53,7 @@ public class TodosController : ControllerBase
         return NoContent();
     }
 
-    [HttpPost("{id}/complete")]
+    [HttpPut("{id}/complete")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> MarkAsCompleted([FromRoute] long todoListId, [FromRoute] long id)
@@ -62,7 +62,7 @@ public class TodosController : ControllerBase
         return Ok(response);
     }
 
-    [HttpPost("{id}/incomplete")]
+    [HttpPut("{id}/incomplete")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> MarkAsUncompleted([FromRoute] long todoListId, [FromRoute] long id)
@@ -71,7 +71,7 @@ public class TodosController : ControllerBase
         return Ok(response);
     }
 
-    [HttpPost("complete-all")]
+    [HttpPut("complete-all")]
     [ProducesResponseType(StatusCodes.Status202Accepted)]
     public ActionResult MarkAllAsCompleted([FromRoute] long todoListId)
     {
