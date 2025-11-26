@@ -60,6 +60,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.MapHub<TodoHub>("/todoHub");
+app.MapHub<TodoHub>("/hubs/todos");
 
 app.Run();
