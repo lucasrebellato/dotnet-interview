@@ -9,6 +9,14 @@ This is a simple Todo List API built in .NET 8. This project is currently being 
 The project comes with a devcontainer that provisions a SQL Server database. If you are not going to use the devcontainer, make sure to provision a SQL Server database and
 update the connection string.
 
+To use your own Database, update the ConnectionStrings:TodoContext in appsettings.Development.json file.
+
+## Migrations 
+
+Commands:
+- Run migrations: dotnet ef migrations add {migrationName} --project TodoApi.DataAccess --startup-project TodoApi
+- Update database: dotnet ef database update --project TodoApi.DataAccess --startup-project TodoApi
+
 ## Build
 
 To build the application:
