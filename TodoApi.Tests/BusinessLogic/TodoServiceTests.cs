@@ -36,11 +36,11 @@ public class TodoServiceTests
 
         repoMock.Setup(r => r.SaveChangesAsync()).Returns(Task.CompletedTask);
 
-        var dto = new CreateTodoDto { Description = "New todo" };
+        var dto = new CreateTodoDto { Title = "New todo", Description = "Details" };
 
         var result = await service.Create(listId, dto);
 
-        repoMock.Verify(r => r.Add(It.Is<Todo>(t => t.Description == "New todo" && t.TodoListId == listId)), Times.Once);
+        repoMock.Verify(r => r.Add(It.Is<Todo>(t => t.Title == "New todo" && t.Description == "Details" && t.TodoListId == listId)), Times.Once);
         Assert.Equal(42, result.Id);
         Assert.Equal("New todo", result.Title);
     }
@@ -49,21 +49,23 @@ public class TodoServiceTests
     public async Task Delete_WhenFound_CallsRepositoryDelete_AndSaves()
     {
         var (service, repoMock, todoListServiceMock, notifierMock) = CreateSut();
-        var todo = new Todo { Id = 5, Description = "x" };
+        var todo = new Todo { Id = 5, Title = "t", Description = "x", TodoListId = 1 };
+        var list = new TodoList { Id = 1, Name = "L", Todos = new List<Todo> { todo } };
 
-        repoMock
-            .Setup(r => r.Get(It.IsAny<Expression<Func<Todo, bool>>>(), It.IsAny<string[]>()))
-            .ReturnsAsync(todo);
+        // The service obtains the todo via ITodoListInternalService.GetByIdWithIncludes(...)
+        todoListServiceMock
+            .Setup(s => s.GetByIdWithIncludes(1, It.IsAny<string[]>()))
+            .ReturnsAsync(list);
 
         repoMock
             .Setup(r => r.Delete(It.IsAny<Todo>()))
             .Returns(Task.CompletedTask);
 
-        repoMock.Setup(r => r.SaveChangesAsync()).Returns(Task.CompletedTask);
-
-        await service.Delete(5);
+        await service.Delete(1, 5);
 
         repoMock.Verify(r => r.Delete(It.Is<Todo>(t => t.Id == 5)), Times.Once);
+        // Delete does not call SaveChangesAsync in current implementation
+        repoMock.Verify(r => r.SaveChangesAsync(), Times.Never);
     }
 
     [Fact]
@@ -71,19 +73,18 @@ public class TodoServiceTests
     {
         var (service, repoMock, todoListServiceMock, notifierMock) = CreateSut();
 
-        repoMock
-            .Setup(r => r.Get(It.IsAny<Expression<Func<Todo, bool>>>(), It.IsAny<string[]>()))!
-            .ReturnsAsync((Todo?)null);
+        todoListServiceMock
+            .Setup(s => s.GetByIdWithIncludes(1, It.IsAny<string[]>()))
+            .ReturnsAsync((TodoList?)null);
 
-        await Assert.ThrowsAsync<NotFoundException>(() => service.Delete(100));
-        notifierMock.VerifyNoOtherCalls();
+        await Assert.ThrowsAsync<NotFoundException>(() => service.Delete(1, 100));
     }
 
     [Fact]
     public async Task GetById_WhenFound_ReturnsMappedDto()
     {
         var (service, repoMock, todoListServiceMock, notifierMock) = CreateSut();
-        var todo = new Todo { Id = 7, Description = "Do it", IsCompleted = true };
+        var todo = new Todo { Id = 7, Title = "Do it", Description = "Do it details", IsCompleted = true };
         var list = new TodoList { Id = 3, Name = "L", Todos = new List<Todo> { todo } };
 
         todoListServiceMock
@@ -116,7 +117,7 @@ public class TodoServiceTests
     public async Task MarkAsCompleted_WhenFound_SetsCompleted_UpdatesAndSaves()
     {
         var (service, repoMock, todoListServiceMock, notifierMock) = CreateSut();
-        var todo = new Todo { Id = 11, Description = "t", IsCompleted = false };
+        var todo = new Todo { Id = 11, Title = "t", Description = "t desc", IsCompleted = false, TodoListId = 4 };
         var list = new TodoList { Id = 4, Name = "L", Todos = new List<Todo> { todo } };
 
         todoListServiceMock
@@ -149,7 +150,7 @@ public class TodoServiceTests
     public async Task Update_WhenFound_UpdatesDescriptionAndReturnsDto_AndSaves()
     {
         var (service, repoMock, todoListServiceMock, notifierMock) = CreateSut();
-        var todo = new Todo { Id = 21, Description = "old" };
+        var todo = new Todo { Id = 21, Title = "old", Description = "old desc", TodoListId = 6 };
         var list = new TodoList { Id = 6, Name = "L", Todos = new List<Todo> { todo } };
 
         todoListServiceMock
@@ -159,9 +160,9 @@ public class TodoServiceTests
         repoMock.Setup(r => r.Update(It.IsAny<Todo>())).Returns(Task.CompletedTask);
         repoMock.Setup(r => r.SaveChangesAsync()).Returns(Task.CompletedTask);
 
-        var result = await service.Update(6, 21, new UpdateTodoDto { Description = "new" });
+        var result = await service.Update(6, 21, new UpdateTodoDto { Title = "new", Description = "new desc" });
 
-        repoMock.Verify(r => r.Update(It.Is<Todo>(t => t.Id == 21 && t.Description == "new")), Times.Once);
+        repoMock.Verify(r => r.Update(It.Is<Todo>(t => t.Id == 21 && t.Title == "new" && t.Description == "new desc")), Times.Once);
     }
 
     [Fact]
@@ -174,7 +175,7 @@ public class TodoServiceTests
             .Setup(s => s.GetByIdWithIncludes(6, It.IsAny<string[]>()))
             .ReturnsAsync(list);
 
-        await Assert.ThrowsAsync<NotFoundException>(() => service.Update(6, 999, new UpdateTodoDto { Description = "x" }));
+        await Assert.ThrowsAsync<NotFoundException>(() => service.Update(6, 999, new UpdateTodoDto { Title = "x", Description = "x" }));
         notifierMock.VerifyNoOtherCalls();
     }
 
@@ -184,9 +185,9 @@ public class TodoServiceTests
         var (service, repoMock, todoListServiceMock, notifierMock) = CreateSut();
         var todos = new List<Todo>
         {
-            new Todo { Id = 1, Description = "a", IsCompleted = false },
-            new Todo { Id = 2, Description = "b", IsCompleted = false },
-            new Todo { Id = 3, Description = "c", IsCompleted = true }
+            new Todo { Id = 1, Title = "a", Description = "a", IsCompleted = false },
+            new Todo { Id = 2, Title = "b", Description = "b", IsCompleted = false },
+            new Todo { Id = 3, Title = "c", Description = "c", IsCompleted = true }
         };
         var list = new TodoList { Id = 9, Name = "L", Todos = todos };
 

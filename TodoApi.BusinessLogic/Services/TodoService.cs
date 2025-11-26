@@ -100,6 +100,8 @@ public class TodoService : ITodoService
     {
         TodoList todoList = await _todoListService.GetByIdWithIncludes(todoListId, ["Todos"]);
 
+        Utils<TodoList>.CheckForNullValue(todoList);
+
         Todo? todo = todoList.Todos.FirstOrDefault(t => t.Id == id);
 
         Utils<Todo>.CheckForNullValue(todo);
