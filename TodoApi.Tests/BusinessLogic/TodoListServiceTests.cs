@@ -4,13 +4,13 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Moq;
-using TodoApi.BusinessLogic.Exceptions;
 using TodoApi.BusinessLogic.Services;
 using TodoApi.IBusinessLogic.Dtos.Request;
 using TodoApi.IBusinessLogic.Dtos.Response;
 using TodoApi.IDataAccess;
 using TodoApi.Domain.Domain;
 using Xunit;
+using TodoApi.IBusinessLogic.Exceptions;
 
 namespace TodoApi.Tests.BusinessLogic;
 

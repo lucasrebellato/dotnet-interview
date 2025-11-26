@@ -21,6 +21,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TodoApi.Filters", "TodoApi.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TodoApi.ServiceFactory", "TodoApi.ServiceFactory\TodoApi.ServiceFactory.csproj", "{69E720ED-637C-46EE-B4A3-8DEC9F0CD509}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TodoApi.Infrastructure", "TodoApi.Infrastructure\TodoApi.Infrastructure.csproj", "{17D98339-7AFF-489B-A47B-E7C5F1B60AC3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TodoApi.Hubs", "TodoApi.Hubs\TodoApi.Hubs.csproj", "{D573CC5D-0676-4587-9B19-2C300A4D185C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -63,6 +67,14 @@ Global
 		{69E720ED-637C-46EE-B4A3-8DEC9F0CD509}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{69E720ED-637C-46EE-B4A3-8DEC9F0CD509}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{69E720ED-637C-46EE-B4A3-8DEC9F0CD509}.Release|Any CPU.Build.0 = Release|Any CPU
+		{17D98339-7AFF-489B-A47B-E7C5F1B60AC3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{17D98339-7AFF-489B-A47B-E7C5F1B60AC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{17D98339-7AFF-489B-A47B-E7C5F1B60AC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{17D98339-7AFF-489B-A47B-E7C5F1B60AC3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D573CC5D-0676-4587-9B19-2C300A4D185C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D573CC5D-0676-4587-9B19-2C300A4D185C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D573CC5D-0676-4587-9B19-2C300A4D185C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D573CC5D-0676-4587-9B19-2C300A4D185C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

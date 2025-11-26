@@ -10,4 +10,5 @@ public interface IGenericRepository<TEntity>
     Task Update(TEntity entity);
     Task Delete(TEntity entity);
     Task<List<TEntity>> GetAll(Expression<Func<TEntity, bool>> predicate, params string[] includes);
+    Task SaveChangesAsync();
 }

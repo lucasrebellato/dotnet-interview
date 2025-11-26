@@ -1,4 +1,4 @@
-﻿namespace TodoApi.BusinessLogic.Exceptions;
+﻿namespace TodoApi.IBusinessLogic.Exceptions;
 
 public class NotFoundException : Exception
 {

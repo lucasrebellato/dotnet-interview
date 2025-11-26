@@ -8,4 +8,9 @@ public class TodoList : ISoftDeletable
     public required string Name { get; set; }
     public List<Todo> Todos { get; set; } = [];
     public bool IsDeleted { get; set; } = false;
+
+    public void Update(string name)
+    {
+        Name = name;
+    }
 }

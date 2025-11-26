@@ -87,5 +87,8 @@ public class GenericRepository<TEntity>(TodoContext context) : IGenericRepositor
         return (await query.ToListAsync());
     }
 
-  
+    public async Task SaveChangesAsync()
+    {
+        await _context.SaveChangesAsync();
+    }
 }

@@ -1,4 +1,5 @@
-﻿using TodoApi.BusinessLogic.Mappers.DtoToObject;
+﻿using TodoApi.BusinessLogic.Interfaces;
+using TodoApi.BusinessLogic.Mappers.DtoToObject;
 using TodoApi.BusinessLogic.Mappers.ObjectToDto;
 using TodoApi.BusinessLogic.Utils;
 using TodoApi.Domain.Domain;
@@ -9,13 +10,18 @@ using TodoApi.IDataAccess;
 
 namespace TodoApi.BusinessLogic.Services;
 
-public class TodoListService : ITodoListService
+public class TodoListService : ITodoListService, ITodoListInternalService
 {
     private readonly IGenericRepository<TodoList> _todoListRepository;
 
     public TodoListService(IGenericRepository<TodoList> todoListRepository)
     {
         _todoListRepository = todoListRepository;
+    }
+
+    public Task AddTodo(long id, Todo todo)
+    {
+        throw new NotImplementedException();
     }
 
     public async Task<TodoListResponseDto> Create(CreateTodoListDto dto)
@@ -38,7 +44,7 @@ public class TodoListService : ITodoListService
 
     public async Task<List<TodoListResponseDto>> GetAll()
     {
-        List<TodoList> todoLists = await _todoListRepository.GetAll(t => true, []);
+        List<TodoList> todoLists = await _todoListRepository.GetAll(t => true, ["Todos"]);
 
         List<TodoListResponseDto> listResponse = todoLists.Select(TodoListToDto.Map).ToList();
 
@@ -47,9 +53,7 @@ public class TodoListService : ITodoListService
 
     public async Task<TodoListResponseDto> GetById(long id)
     {
-        TodoList todoList = await _todoListRepository.Get(x => x.Id == id, ["Todos"]);
-
-        Utils<TodoList>.CheckForNullValue(todoList);
+        TodoList todoList = await GetByIdWithIncludes(id, ["Todos"]);
 
         return TodoListToDto.Map(todoList);
     }
@@ -60,9 +64,26 @@ public class TodoListService : ITodoListService
 
         Utils<TodoList>.CheckForNullValue(todoList);
 
-        todoList.Name = dto.Name;
+        todoList.Update(dto.Name);
+
         await _todoListRepository.Update(todoList);
 
         return TodoListToDto.Map(todoList);
     }
+
+    public async Task<TodoList> GetByIdWithIncludes(long id, params string[] includes)
+    {
+        TodoList todoList = await _todoListRepository.Get(x => x.Id == id, includes);
+        Utils<TodoList>.CheckForNullValue(todoList);
+
+        return todoList;
+    }
+
+    public async Task Exists(long id)
+    {
+        TodoList todoList = await _todoListRepository.Get(x => x.Id == id, []);
+
+        Utils<TodoList>.CheckForNullValue(todoList);
+    }
+   
 }

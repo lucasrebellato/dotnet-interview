@@ -38,3 +38,12 @@ Check integration tests at: (https://github.com/crunchloop/interview-tests)
 ![crunchloop](https://crunchloop.io/logo-blue.png)
 
 We strongly believe in giving back :rocket:. Let's work together [`Get in touch`](https://crunchloop.io/contact).
+
+
+## Developer notes
+
+- To conect a frontend application to this API, you need to update the AllowedOrigins in appsettings.Development.json file to include the URL where your frontend application is running.
+
+- The route to connect with the SignalR hub is {apiUrl}/hubs/todos.
+
+- To use your own Database, update the ConnectionStrings:TodoContext in appsettings.Development.json file.

@@ -16,6 +16,7 @@ public class TodoContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfiguration(new TodoListConfiguration());
+        modelBuilder.ApplyConfiguration(new TodoConfiguration());
 
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
         {
