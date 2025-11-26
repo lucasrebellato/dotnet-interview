@@ -17,6 +17,11 @@ Commands:
 - Run migrations: dotnet ef migrations add {migrationName} --project TodoApi.DataAccess --startup-project TodoApi
 - Update database: dotnet ef database update --project TodoApi.DataAccess --startup-project TodoApi
 
+## Conect with API and SignalR socket
+
+- To conect a frontend application to this API, you need to update the AllowedOrigins in appsettings.Development.json file to include the URL where your frontend application is running.
+- The route to connect with the SignalR hub is {apiUrl}/hubs/todos.
+
 ## Build
 
 To build the application:
@@ -49,12 +54,6 @@ We strongly believe in giving back :rocket:. Let's work together [`Get in touch`
 
 
 ## Developer notes
-
-- To conect a frontend application to this API, you need to update the AllowedOrigins in appsettings.Development.json file to include the URL where your frontend application is running.
-
-- The route to connect with the SignalR hub is {apiUrl}/hubs/todos.
-
-- To use your own Database, update the ConnectionStrings:TodoContext in appsettings.Development.json file.
 
 ## The requested functionalities were implemented:
 - CRUD for Todos and TodoLists
